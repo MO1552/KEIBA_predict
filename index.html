@@ -1,13 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#12151b">
-<meta name="description" content="競馬レース一括予想アプリ">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="競馬予想">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>競馬 レース一括予想アプリ</title><style>
 :root{--bg:#f5f6f8;--card:#fff;--tx:#1d2330;--sub:#6b7385;--bd:#dfe3ea;--ac:#1f6feb;--up:#1a8f4c;--dn:#d1432f}
 @media(prefers-color-scheme:dark){:root{--bg:#12151b;--card:#1b2029;--tx:#e6e9ef;--sub:#97a0b3;--bd:#2c3340;--ac:#5aa0ff;--up:#4cc27f;--dn:#ff7a66}}
@@ -392,6 +384,26 @@ async function loadPdfJs(){
  m.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([dec('pdfjs_worker')],{type:'text/javascript'}));
  return window.__pdfjs=m;
 }
+// Safari compatibility: read PDF.js text streams via getReader() instead of for-await iteration.
+async function readPageTextContentSafari(page){
+ const stream=page.streamTextContent();
+ if(!stream || typeof stream.getReader!=='function') return page.getTextContent();
+ const reader=stream.getReader();
+ const textContent={items:[],styles:Object.create(null),lang:null};
+ try{
+  while(true){
+   const result=await reader.read();
+   if(result.done)break;
+   const value=result.value;
+   textContent.lang=textContent.lang||value.lang||null;
+   Object.assign(textContent.styles,value.styles||{});
+   if(value.items)textContent.items.push(...value.items);
+  }
+ }finally{
+  try{reader.releaseLock()}catch(e){}
+ }
+ return textContent;
+}
 function applyRace(r){
  const pi=M.places.indexOf(r.place);$('pl').value=pi>=0?pi:'';$('sf').value=r.sf;fillDist();
  const opts=[...$('di').options].map(o=>o.value).filter(v=>v!=='').map(Number);
@@ -404,7 +416,7 @@ $('pdf').onchange=async e=>{
  const f=e.target.files[0];if(!f)return;$('pdfmsg').textContent='PDFを読み込み中…';
  try{
   const pdfjs=await loadPdfJs();const doc=await pdfjs.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
-  PDFR=[];for(let p=1;p<=doc.numPages;p++){const tc=await(await doc.getPage(p)).getTextContent();const r=parseJra(tc.items);if(r&&r.rows.length)PDFR.push(r)}
+  PDFR=[];for(let p=1;p<=doc.numPages;p++){const pg=await doc.getPage(p);const tc=await readPageTextContentSafari(pg);const r=parseJra(tc.items);if(r&&r.rows.length)PDFR.push(r)}
   if(!PDFR.length){$('pdfmsg').innerHTML='<span class="bad">出馬表を認識できませんでした(JRA公式の出馬表PDFか確認してください)。</span>';return}
   const sel=$('pdfrace');
   if(PDFR.length>1){sel.style.display='';sel.innerHTML=PDFR.map((r,i)=>`<option value="${i}">${r.place}${r.rno}R ${r.title}</option>`).join('');sel.onchange=()=>applyRace(PDFR[+sel.value])}else sel.style.display='none';
@@ -425,10 +437,4 @@ const fd=x=>'20'+String(x).slice(0,2)+'/'+String(x).slice(2,4)+'/'+String(x).sli
  calc();
 }catch(e){$('period').textContent='読み込みエラー: '+e.message}})();
 
-</script><script>
-// HTTPSで配信された場合は、ホーム画面追加とオフライン起動用にService Workerを登録
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service Worker registration failed:', err)));
-}
-</script>
-</body></html>
+</script></body></html>
