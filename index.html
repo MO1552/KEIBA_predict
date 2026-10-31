@@ -86,19 +86,48 @@ button{ min-height:36px; }
 
 
 @media(max-width:700px){.row>label{flex:1 1 100%!important;flex-direction:column!important;align-items:flex-start!important}.row>label input[type=file]{width:100%!important}}
+
+/* ===== 競馬テーマ ===== */
+:root{--bg:#efe9d6;--card:#fffdf5;--tx:#1b2a22;--sub:#5d6b62;--bd:#d9d0b4;--ac:#0f6b3a;--up:#1a8f4c;--dn:#c0392b;--gold:#c9a227;--turf:#0b3d2a;--turf2:#14633b}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1511;--card:#14201a;--tx:#e9efe9;--sub:#9db0a3;--bd:#27382e;--ac:#3ecf84;--up:#4cc27f;--dn:#ff7a66;--gold:#e0b93a;--turf:#071d14;--turf2:#0d3a24}}
+body{background:var(--bg) repeating-linear-gradient(90deg,transparent 0 46px,rgba(15,107,58,.05) 46px 92px)}
+header{background:linear-gradient(135deg,var(--turf),var(--turf2));border-bottom:4px solid var(--gold);color:#fff;padding:12px 16px}
+header .hd{display:flex;align-items:center;gap:12px;max-width:1300px;margin:0 auto}
+header .logo{font-size:36px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+header h1{font-size:21px;letter-spacing:.12em;color:#fff;margin:0;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+header .sub{color:#cfe6d6;font-size:12px}
+.chk{height:9px;background:repeating-conic-gradient(#111 0 25%,#fff 0 50%) 0 0/18px 18px}
+.panel{border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.panel h2{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--turf2)}
+@media(prefers-color-scheme:dark){.panel h2{color:var(--ac)}}
+.panel h2::before{content:"";width:5px;height:18px;border-radius:3px;background:linear-gradient(var(--gold),var(--turf2))}
+button{border-radius:999px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:6px 14px;font-weight:600;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--turf2);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+button:disabled{opacity:.45;cursor:default}
+.btns button.pri{background:linear-gradient(135deg,var(--turf2),var(--turf));color:#fff;border-color:var(--turf)}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:0}
+.g th{background:var(--turf2);color:#fff;font-size:12px;border-bottom:2px solid var(--gold)}
+.g tr:nth-child(even) td{background:rgba(15,107,58,.05)}
+.rk th{background:var(--turf2);color:#fff;border-bottom:2px solid var(--gold)}
+.rk tr.rk1 td{background:rgba(201,162,39,.20)}.rk tr.rk2 td{background:rgba(150,162,172,.18)}.rk tr.rk3 td{background:rgba(176,112,64,.16)}
+.rb{display:inline-block;min-width:26px;padding:1px 6px;border-radius:50%;background:var(--bd);font-weight:800;text-align:center}
+.rk1 .rb{background:var(--gold);color:#fff}.rk2 .rb{background:#8d99a2;color:#fff}.rk3 .rb{background:#b0703f;color:#fff}
+.bar{background:linear-gradient(90deg,var(--turf2),var(--gold));opacity:.85;height:9px}
+.wk{box-shadow:0 1px 2px rgba(0,0,0,.35);border-radius:6px}
+#stat{display:inline-block;background:#10130f;color:#ffc933;font-weight:700;padding:4px 12px;border-radius:6px;border:2px solid #3a3a2a;letter-spacing:.05em;font-family:ui-monospace,Menlo,monospace}
+#stat:empty{display:none}
 </style></head><body>
-<header class="noprint"><h1>競馬 レース一括予想アプリ</h1><div class="sub" id="period">データ読み込み中…</div><div class="sub" id="offl"></div></header>
+<header class="noprint"><div class="hd"><span class="logo">🏇</span><div><h1>競馬 レース一括予想</h1><div class="sub" id="period">データ読み込み中…</div><div class="sub" id="offl"></div></div></div></header><div class="chk noprint"></div>
 <div class="wrap">
 <div class="panel noprint"><h2>レース条件(必須)</h2><div class="row2">
 <label>開催場所<select id="pl"></select></label><label>芝 / ダート<select id="sf"><option value="">選択</option><option value="0">芝</option><option value="1">ダート</option></select></label>
 <label>距離<select id="di"></select></label><label>馬場状態(任意)<select id="gd"><option value="">指定なし</option><option value="1">良</option><option value="2">稍重</option><option value="3">重</option><option value="4">不良</option></select></label><label>レース名(表示用)<input id="rn"></label><label>頭数(自動)<input id="fsn" readonly></label></div></div>
 <div class="panel noprint"><h2>出走馬(セルを直接編集できます)</h2>
-<div class="scroll"><table class="g" id="grid"></table></div>
-<div class="row"><button id="add">行を追加</button><button id="clr">全行クリア</button><button id="cp">表をコピー(TSV)</button><button id="undo" disabled>↶ 元に戻す</button><button id="redo" disabled>↷ やり直す</button><button id="sv">保存</button><select id="slots" style="width:auto;min-width:110px"></select><button id="ld">読込</button><button id="dl">削除</button><button id="ex">ファイルに書き出し</button><label style="flex-direction:row;align-items:center;gap:6px">ファイル読込<input type="file" id="jf" accept=".json" style="width:auto;border:0;padding:0"></label>
-<label style="flex-direction:row;align-items:center;gap:6px">JRA出馬表PDF<input type="file" id="pdf" accept=".pdf,application/pdf" style="width:auto;border:0;padding:0"></label><select id="pdfrace" style="display:none"></select>
-<label style="flex-direction:row;align-items:center;gap:6px">CSV/TSVファイル<input type="file" id="file" accept=".csv,.tsv,.txt" style="width:auto;border:0;padding:0"></label></div>
+<div class="row"><label style="flex-direction:row;align-items:center;gap:6px">JRA出馬表PDF<input type="file" id="pdf" accept=".pdf,application/pdf" style="width:auto;border:0;padding:0"></label><select id="pdfrace" style="display:none"></select><label style="flex-direction:row;align-items:center;gap:6px">CSV/TSVファイル<input type="file" id="file" accept=".csv,.tsv,.txt" style="width:auto;border:0;padding:0"></label><button id="add">行を追加</button><button id="clr">全行クリア</button><button id="cp">表をコピー(TSV)</button><button id="undo" disabled>↶ 元に戻す</button><button id="redo" disabled>↷ やり直す</button><button id="sv">保存</button><select id="slots" style="width:auto;min-width:110px"></select><button id="ld">読込</button><button id="dl">削除</button><button id="ex">ファイルに書き出し</button><label style="flex-direction:row;align-items:center;gap:6px">ファイル読込<input type="file" id="jf" accept=".json" style="width:auto;border:0;padding:0"></label>
+
+</div>
 <p class="note" id="pdfmsg"></p>
-<details style="margin-top:8px"><summary>表を貼り付けて取り込む(Excel・出馬表のコピー)</summary>
+<div class="scroll"><table class="g" id="grid"></table></div><details style="margin-top:8px"><summary>表を貼り付けて取り込む(Excel・出馬表のコピー)</summary>
 <textarea id="paste" placeholder="1行目に項目名(枠・馬番・馬名・性齢/性別・馬齢・騎手・厩舎/調教師・人気・馬体重・前走体重・脚質・前走間隔・種牡馬・母父)があれば自動で対応付けます。タブ区切りまたはカンマ区切り。"></textarea>
 <div class="row"><button id="imp">取り込む(現在の表を置き換え)</button></div></details>
 <p class="note">JRA公式の出馬表PDF(文字が選択できるもの)を読み込むと、レース条件と出走馬(前走体重を含む)を自動入力します。netkeibaのPDF新聞は文字化けするため非対応です(貼り付けを使ってください)。</p>
@@ -107,6 +136,7 @@ button{ min-height:36px; }
 <datalist id="dl_jockey"></datalist><datalist id="dl_trainer"></datalist><datalist id="dl_sire"></datalist><datalist id="dl_bms"></datalist></div>
 <div class="panel"><h2>予想結果(勝率順・人気を使った予想に人気なしの参考を併記)</h2><p class="note" id="stat"></p><p class="note" id="used"></p>
 <label class="noprint" style="flex-direction:row;align-items:center;gap:8px;margin:6px 0">人気の扱い<select id="pmode" style="width:auto"><option value="both">人気を使う+使わない(両方を並べる)</option><option value="use">人気を使う</option><option value="no">人気を使わない</option></select></label>
+<label class="noprint" style="flex-direction:row;align-items:center;gap:8px;margin:6px 0 6px 12px">人気の重み<select id="popw" style="width:auto"><option value="100">100%(そのまま)</option><option value="75">75%</option><option value="50" selected>50%</option><option value="25">25%</option></select></label>
 <div class="scroll"><table class="rk" id="rk"></table></div>
 <div class="btns noprint"><button class="pri" id="csv">CSVで出力(項目の重み付き)</button><button id="prt">PDFで保存(印刷画面で「PDFに保存」を選択)</button><span class="note" id="wmsg"></span></div>
 <p class="note">過去のJRA約<span id="nn"></span>走から学習した統計モデルによる推定です(結果を保証するものではありません)。レース内で勝率の合計が100%、連対率が200%、複勝率が300%になるよう補正しています。人気が使えないと精度は大きく下がります。</p></div>
@@ -151,7 +181,7 @@ function mkEngine(M,C,n){
   const sf=inp.sf,c=(inp.pid*2+sf)*4+dbin(inp.dist),sK=String(sf),cK=String(c);
   const ci=M.ck.findIndex(k=>k[0]==inp.pid&&k[1]==sf&&k[2]==inp.dist);
   const b=[M.intercept[0]+(ci>=0?M.course[ci][0]:0),M.intercept[1]+(ci>=0?M.course[ci][1]:0),M.intercept[2]+(ci>=0?M.course[ci][2]:0)];
-  const rows=cands(inp,c);const N=rows.length;
+  const pwt=inp.popw!=null?inp.popw:1;const rows=cands(inp,c);const N=rows.length;
   const wbSpec=inp.wt!=null?(Math.min(560,Math.max(400,Math.floor(inp.wt/5)*5))-400)/5:null;
   const S=[0,0,0];
   const g=(f,key)=>TB[f][key],m=(f,key)=>MN[f][key]||Z;
@@ -167,7 +197,7 @@ function mkEngine(M,C,n){
   for(let r=0;r<N;r++){
    const i=rows[r];L[0]=b[0];L[1]=b[1];L[2]=b[2];
    let v,o;
-   v=inp.pop!=null?inp.pop:C.pop[i];if(v>0){o=v*3;L[0]+=tPop[o];L[1]+=tPop[o+1];L[2]+=tPop[o+2]}else mAdd(L,mPop);
+   v=inp.pop!=null?inp.pop:C.pop[i];if(v>0){o=v*3;L[0]+=pwt*tPop[o];L[1]+=pwt*tPop[o+1];L[2]+=pwt*tPop[o+2]}else{L[0]+=pwt*mPop[0];L[1]+=pwt*mPop[1];L[2]+=pwt*mPop[2]}
    v=inp.fs!=null?inp.fs:C.fs2[i];if(v>0){o=v*3;L[0]+=tFs[o];L[1]+=tFs[o+1];L[2]+=tFs[o+2]}else mAdd(L,mFs);
    v=inp.sty!=null?inp.sty:C.sty[i];if(v>0){o=v*3;L[0]+=tSty[o];L[1]+=tSty[o+1];L[2]+=tSty[o+2]}else mAdd(L,mSty);
    const sx=inp.sex!=null?inp.sex:C.sex[i],sg=sx==1?1:0;
@@ -208,9 +238,8 @@ function parseJra(raw){
  const title=it.filter(i=>(i.y>795&&i.x>60&&i.x<200&&!/年|回|^\d+R$/.test(i.s))||(i.y>780&&i.y<=795&&i.x<100)).sort((a,b)=>b.y-a.y||a.x-b.x).map(i=>i.s).join(' ');
  const MARK=/^(?:[○〇◯●◎]\s*[地外父市]|\([地外父市]\)|\[[地外父市]\]|[㊎㊏㊩㊥]|[地外父市](?=[ァ-ヶー]))\s*/;
  const oddsIt=it.filter(o=>o.x>=160&&o.x<210&&o.y<770&&/番人気/.test(o.s));
- let names;
- if(oddsIt.length){names=oddsIt.map(o=>{const nm=it.filter(i=>Math.abs(i.y-o.y)<=5&&i.x>=66&&i.x<o.x-5&&!/^\d{1,2}$/.test(i.s)&&!/^\(\d/.test(i.s)&&!/^B$/.test(i.s)).sort((a,b)=>a.x-b.x).map(i=>i.s).join('').replace(/[\s　]/g,'').replace(MARK,'');return{s:nm,x:o.x,y:o.y}}).filter(n=>n.s).sort((a,b)=>b.y-a.y)}
- else names=it.filter(i=>i.x>=70&&i.x<=90&&i.y<770&&!/^[\d(B]/.test(i.s)&&!/^[\d.]+$/.test(i.s)).sort((a,b)=>b.y-a.y).map(i=>({s:i.s.replace(MARK,''),x:i.x,y:i.y}));
+ let names=it.filter(i=>i.x>=70&&i.x<=90&&i.y<770&&!/^(\d|B$|\((?![地外父市]\)))/.test(i.s)&&!/^[\d.]+$/.test(i.s)&&!/^[父母]\s/.test(i.s)&&!/\((栗東|美浦)\)\s*$/.test(i.s)&&!/^コースレコード/.test(i.s)).sort((a,b)=>b.y-a.y).map(i=>{let s=i.s.replace(MARK,'');if(!s){const nx=it.filter(j=>Math.abs(j.y-i.y)<=5&&j.x>i.x+3&&j.x<160).sort((p,q)=>p.x-q.x)[0];s=nx?nx.s.replace(MARK,''):''}return{s:s.replace(/[\s　]/g,''),x:i.x,y:i.y}}).filter(n=>n.s).filter((n,k,arr)=>arr.findIndex(m=>m.s===n.s&&Math.abs(m.y-n.y)<=5)===k);
+ if(!names.length&&oddsIt.length){names=oddsIt.map(o=>{const nm=it.filter(i=>Math.abs(i.y-o.y)<=5&&i.x>=66&&i.x<o.x-5&&!/^\d{1,2}$/.test(i.s)&&!/^\(\d/.test(i.s)&&!/^B$/.test(i.s)).sort((p,q)=>p.x-q.x).map(i=>i.s).join('').replace(/[\s　]/g,'').replace(MARK,'');return{s:nm,x:o.x,y:o.y}}).filter(n=>n.s).sort((p,q)=>q.y-p.y)}
  const rows=[];
  names.forEach((nmIt,k)=>{
   const top=nmIt.y+8,bot=k+1<names.length?names[k+1].y+8:nmIt.y-100;
@@ -221,7 +250,7 @@ function parseJra(raw){
    if(i.x<75&&/^\d{1,2}$/.test(i.s)){if(i.x<61)r.waku=i.s;else r.uma=i.s;continue}
    if(i.x>=160&&i.x<210&&(m=i.s.match(/^([\d.]+)\s*\((\d+)番人気\)/))){r.odds=m[1];r.pop=m[2];continue}
    if(i.x>=210&&i.x<240&&(m=i.s.match(/^(牡|牝|セ|せん)(\d+)$/))){r.sex=m[1]=='せん'?'セ':m[1];r.age=m[2];continue}
-   if(i.x>=210&&i.x<232&&!/kg$/.test(i.s)&&!r.jk){r.jk=i.s.replace(/^[☆▲△★◇]/,'').replace(/\s/g,'').replace(/^(?:[A-Za-z]\.)+/,'');continue}
+   if(i.x>=210&&i.x<232&&!/kg$/.test(i.s)&&!r.jk){r.jk=i.s.replace(/^[☆▲△★◇]/,'').replace(/\s/g,'');continue}
    if(i.x>=78&&i.x<200&&(m=i.s.match(/^(.*)\((栗東|美浦)\)\s*$/))){const tk=m[1].trim().split(/\s+/);r.tr=tk.slice(-2).join('');continue}
    if(i.x>=78&&i.x<200&&(m=i.s.match(/^父\s*(.+)$/))){const q2=m[1].match(/^(.*?)\s*母\s*(.*)$/);r.si=(q2?q2[1]:m[1]).trim();if(q2){const mm=q2[2].match(/\(([^()]*)\)\s*$/);if(mm)r.bm=mm[1].trim()}continue}
    if(i.x>=78&&i.x<200&&i.s.startsWith('母')){const mm=i.s.match(/\(([^()]*)\)\s*$/);if(mm)r.bm=mm[1].trim();continue}
@@ -248,6 +277,8 @@ for(const k in P){const [nm,nn]=P[k];IDX[k]=new Map(M[nm].map((x,i)=>[x,i]));IDX
  const ord=M[nm].map((x,i)=>i).sort((a,b)=>M[nn][b]-M[nn][a]);$('dl_'+k).innerHTML=ord.map(i=>`<option value="${M[nm][i]}">${M[nn][i]}走</option>`).join('')}
 function resolve(k,s){
  s=(s||'').replace(/[\s　]/g,'');if(!s)return null;
+ const im=s.match(/^([A-Za-z])[.．](.+)$/);
+ if(im){const r1=resolve(k,String.fromCharCode(im[1].toUpperCase().charCodeAt(0)+0xFEE0)+'．'+im[2]);if(r1&&r1.i!=null)return r1;s=im[2]}
  const [nm,nn]=P[k],L=M[nm],N=M[nn];
  if(IDX[k].has(s))return{i:IDX[k].get(s),amb:0};
  if(IDX[k+'_l'].has(s.toLowerCase()))return{i:IDX[k+'_l'].get(s.toLowerCase()),amb:0};
@@ -312,6 +343,7 @@ const FACT=[['gd','馬場状態'],['pop','人気'],['sty','脚質'],['wt','馬�
 let LAST=null;
 function rowInp(r,i,fsn,pid,sf,dist){
  const inp={pid,sf,dist,fs:Math.min(18,Math.max(4,fsn))},mt=[];
+ inp.popw=(+$('popw').value||100)/100;
  const pop=numv(r.pop);inp.pop=pop>=1&&pop<=18?Math.round(pop):null;
  inp.sty=STY.indexOf(r.sty)>0?STY.indexOf(r.sty):null;
  const wt=numv(r.wt),pw=numv(r.pw);inp.wt=wt&&wt>=250&&wt<=700?wt:null;
@@ -370,7 +402,7 @@ function calc(){
  const used={},miss={};
  for(const [f] of FACT){miss[f]=items.filter(h=>h.inp[f]==null).length;used[f]=miss[f]==0}
  for(const h of items)for(const [f] of FACT)if(!used[f])h.inp[f]=null;
- const pmode=$('pmode').value;
+ const pmode=$('pmode').value,popw=+$('popw').value||100;
  if(pmode=='no'){for(const h of items)h.inp.pop=null;used.pop=false}
  const hasRef=pmode=='both'&&used.pop;
  const res=items.map(h=>({r:h.r,inp:h.inp,p:E.predict(h.inp).p}));
@@ -379,11 +411,11 @@ function calc(){
  const ord=[...res].sort((a,b)=>b.m.w-a.m.w);
  let ordRef=null;if(hasRef){ordRef=[...res].sort((a,b)=>b.n.w-a.n.w);ordRef.forEach((x,i)=>x.nrank=i+1)}
  const label=`${$('pl').selectedOptions[0].text} ${sf?'ダート':'芝'} ${dist}m ${res.length}頭`+($('gd').value!==''?' '+$('gd').selectedOptions[0].text:'')+($('rn').value.trim()?' / '+$('rn').value.trim():'');
- LAST={res,ord,ordRef,used,miss,label,hasRef,pmode,weights:null,weights2:null};
+ LAST={res,ord,ordRef,used,miss,label,hasRef,pmode,popw,weights:null,weights2:null};
  const mx=Math.max(...res.map(x=>x.m.s),...(hasRef?res.map(x=>x.n.s):[0]));
  const bar=v=>`<span class="bar" style="width:${v/mx*60}px"></span>${pf(v)}`;
- $('rk').innerHTML='<tr><th rowspan="2">順位</th><th rowspan="2">馬番</th><th rowspan="2" style="text-align:left">馬名</th><th colspan="3">'+(used.pop?'予想(人気を使用)':'予想(人気は使用せず)')+'</th>'+(hasRef?'<th colspan="4" class="refh">参考:人気を使わない予測</th>':'')+'</tr><tr><th>勝率</th><th>連対率</th><th>複勝率</th>'+(hasRef?'<th class="refh">順位</th><th>勝率</th><th>連対率</th><th>複勝率</th>':'')+'</tr>'+
-  ord.map((x,i)=>`<tr><td>${i+1}</td><td><span class="wk" style="${wkSty(x.r.waku)}">${x.r.uma}</span></td><td style="text-align:left">${x.r.name||''}</td><td>${bar(x.m.w)}</td><td>${bar(x.m.q)}</td><td>${bar(x.m.s)}</td>`+(hasRef?`<td class="ref rl">${x.nrank}</td><td class="ref">${bar(x.n.w)}</td><td class="ref">${bar(x.n.q)}</td><td class="ref">${bar(x.n.s)}</td>`:'')+'</tr>').join('');
+ $('rk').innerHTML='<tr><th rowspan="2">順位</th><th rowspan="2">馬番</th><th rowspan="2" style="text-align:left">馬名</th><th colspan="3">'+(used.pop?'予想(人気を使用'+(popw<100?'・重み'+popw+'%':'')+')':'予想(人気は使用せず)')+'</th>'+(hasRef?'<th colspan="4" class="refh">参考:人気を使わない予測</th>':'')+'</tr><tr><th>勝率</th><th>連対率</th><th>複勝率</th>'+(hasRef?'<th class="refh">順位</th><th>勝率</th><th>連対率</th><th>複勝率</th>':'')+'</tr>'+
+  ord.map((x,i)=>`<tr class="${i<3?'rk'+(i+1):''}"><td><span class="rb">${i+1}</span></td><td><span class="wk" style="${wkSty(x.r.waku)}">${x.r.uma}</span></td><td style="text-align:left">${x.r.name||''}</td><td>${bar(x.m.w)}</td><td>${bar(x.m.q)}</td><td>${bar(x.m.s)}</td>`+(hasRef?`<td class="ref rl">${x.nrank}</td><td class="ref">${bar(x.n.w)}</td><td class="ref">${bar(x.n.q)}</td><td class="ref">${bar(x.n.s)}</td>`:'')+'</tr>').join('');
  const ul=FACT.filter(([f])=>used[f]).map(x=>x[1]),nl=FACT.filter(([f])=>!used[f]).map(([f,l])=>f=='gd'?'馬場状態(未選択)':f=='pop'&&pmode=='no'?'人気(設定により未使用)':`${l}(${miss[f]}頭未入力)`);
  $('stat').textContent=label;
  $('used').innerHTML=`<b>使用した項目:</b> コース・頭数${ul.length?'・'+ul.join('・'):''}<br><b>使わなかった項目:</b> ${nl.length?nl.join('、'):'なし'}`+(hasRef?'<br><span class="note">右側の「参考」は、同じ項目から人気だけを外した予測です(人気に引っ張られていない、馬自身の条件だけの見方)。人気なしでは精度が下がります。</span>':(used.pop?'':(pmode=='no'?'<br><span class="note">人気を考慮しない設定です。</span>':'<br><span class="note">人気が全頭そろっていないため、人気を使わない予測のみです。</span>')));
@@ -421,6 +453,7 @@ function buildCsv(){
  L.push(['レース',LAST.label]);
  L.push(['使用した項目','コース','頭数',...FACT.filter(([f])=>LAST.used[f]).map(x=>x[1])]);
  L.push(['使わなかった項目(未入力あり)',...FACT.filter(([f])=>!LAST.used[f]).map(([f,l])=>f=='gd'?'馬場状態(未選択)':f=='pop'&&LAST.pmode=='no'?'人気(設定により未使用)':`${l}(${LAST.miss[f]}頭)`)]);
+ if(LAST.used.pop)L.push(['人気の重み(%)',LAST.popw]);
  if(!R)L.push(['備考',LAST.used.pop?'人気を使用した予測のみです':(LAST.pmode=='no'?'人気を考慮しない設定です':'人気が全頭そろっていないため、人気を使わない予測のみです')]);
  L.push([]);
  L.push(['順位','枠','馬番','馬名','勝率(%)','連対率(%)','複勝率(%)',...(R?['参考:人気なし順位','参考:人気なし勝率(%)','参考:人気なし連対率(%)','参考:人気なし複勝率(%)']:[]),...ws.map(x=>'勝率倍率:'+x.l)]);
@@ -476,14 +509,14 @@ $('pdf').onchange=async e=>{
   applyRace(PDFR[0]);
  }catch(err){$('pdfmsg').innerHTML='<span class="bad">PDFの読み込みに失敗しました: '+err.message+'(貼り付け取り込みをお使いください)</span>'}
 };
-['pl','sf','di','gd','pmode'].forEach(id=>$(id).addEventListener('change',()=>{if(id=='pl'||id=='sf')fillDist();sched()}));
+['pl','sf','di','gd','pmode','popw'].forEach(id=>$(id).addEventListener('change',()=>{if(id=='pl'||id=='sf')fillDist();sched()}));
 $('rn').addEventListener('input',sched);
 
 let st=null,hist=[],hpos=-1;
-const stateObj=()=>({rows,pl:$('pl').value,sf:$('sf').value,di:$('di').value,gd:$('gd').value,pm:$('pmode').value,rn:$('rn').value});
+const stateObj=()=>({rows,pl:$('pl').value,sf:$('sf').value,di:$('di').value,gd:$('gd').value,pm:$('pmode').value,pw:$('popw').value,rn:$('rn').value});
 function updBtns(){$('undo').disabled=hpos<=0;$('redo').disabled=hpos>=hist.length-1}
 function snap(){const s=JSON.stringify(stateObj());if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>100)hist.shift();hpos=hist.length-1;updBtns()}
-function restore(s){const o=JSON.parse(s);rows=o.rows.map(mk);$('pl').value=o.pl;$('sf').value=o.sf;fillDist();$('di').value=o.di;$('gd').value=o.gd;if(o.pm)$('pmode').value=o.pm;$('rn').value=o.rn;renderGrid();clearTimeout(tm);calc()}
+function restore(s){const o=JSON.parse(s);rows=o.rows.map(mk);$('pl').value=o.pl;$('sf').value=o.sf;fillDist();$('di').value=o.di;$('gd').value=o.gd;if(o.pm)$('pmode').value=o.pm;if(o.pw)$('popw').value=o.pw;$('rn').value=o.rn;renderGrid();clearTimeout(tm);calc()}
 $('undo').onclick=()=>{clearTimeout(st);snap();if(hpos>0){hpos--;restore(hist[hpos]);updBtns()}};
 $('redo').onclick=()=>{if(hpos<hist.length-1){hpos++;restore(hist[hpos]);updBtns()}};
 const SK='keiba_saves_v1';
