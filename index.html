@@ -47,8 +47,45 @@ textarea{width:100%;height:90px;font:12px/1.4 monospace;color:var(--tx);backgrou
  :root{--bg:#fff;--card:#fff;--tx:#000;--sub:#444;--bd:#ccc}
 }
 
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(max-width:640px){body{font-size:15px}.wrap{padding:8px}.row2 label{min-width:46%;flex:1}select,input,.g input,.g select{font-size:16px}button{padding:8px 12px}.g .nm{width:120px}.panel{padding:10px}}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+/* iPhone / narrow-screen usability improvements */
+html{ -webkit-text-size-adjust:100%; }
+input,select,textarea,button{ touch-action:manipulation; }
+button{ min-height:36px; }
+.scroll{ max-width:100%; -webkit-overflow-scrolling:touch; }
+@media (max-width: 700px){
+  body{font-size:14px; padding-bottom:env(safe-area-inset-bottom);}
+  header{padding:12px;}
+  h1{font-size:17px;}
+  .wrap{padding:8px;}
+  .panel{padding:10px;border-radius:9px;margin-bottom:9px;}
+  .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .row2 label{min-width:0;}
+  .row2 label:first-child{grid-column:auto;}
+  .row2 input,.row2 select{min-height:40px;font-size:16px;}
+  .f{grid-template-columns:1fr;}
+  .res{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+  .big{padding:8px 2px;}
+  .big .v{font-size:23px;}
+  .g{min-width:900px;}
+  .rk{min-width:580px;}
+  .scroll{overflow-x:auto;}
+  .row{gap:6px;}
+  .row button,.btns button{min-height:40px;padding:7px 10px;}
+  .row2 label.w,label.w{grid-column:1/-1;}
+  textarea{font-size:16px;height:110px;}
+  summary{padding:8px 0;}
+  #fsn{font-size:16px;}
+}
+@media (max-width: 380px){
+  .row2{grid-template-columns:minmax(0,1fr);}
+  .res{grid-template-columns:1fr;}
+  .big{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;}
+  .big .v{font-size:22px;}
+}
+
+
+@media(max-width:700px){.row>label{flex:1 1 100%!important;flex-direction:column!important;align-items:flex-start!important}.row>label input[type=file]{width:100%!important}}
 </style></head><body>
 <header class="noprint"><h1>競馬 レース一括予想アプリ</h1><div class="sub" id="period">データ読み込み中…</div></header>
 <div class="wrap">
@@ -412,6 +449,14 @@ async function loadPdfJs(){
  m.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([dec('pdfjs_worker')],{type:'text/javascript'}));
  return window.__pdfjs=m;
 }
+async function readPageTextContentSafari(page){
+ const stream=page.streamTextContent();
+ if(!stream||typeof stream.getReader!=='function')return page.getTextContent();
+ const reader=stream.getReader(),tc={items:[],styles:Object.create(null),lang:null};
+ try{while(true){const r=await reader.read();if(r.done)break;const v=r.value;tc.lang=tc.lang||v.lang||null;Object.assign(tc.styles,v.styles||{});if(v.items)tc.items.push(...v.items)}}
+ finally{try{reader.releaseLock()}catch(e){}}
+ return tc;
+}
 function applyRace(r){
  const pi=M.places.indexOf(r.place);$('pl').value=pi>=0?pi:'';$('sf').value=r.sf;fillDist();
  const opts=[...$('di').options].map(o=>o.value).filter(v=>v!=='').map(Number);
@@ -424,7 +469,7 @@ $('pdf').onchange=async e=>{
  const f=e.target.files[0];if(!f)return;$('pdfmsg').textContent='PDFを読み込み中…';
  try{
   const pdfjs=await loadPdfJs();const doc=await pdfjs.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
-  PDFR=[];for(let p=1;p<=doc.numPages;p++){const tc=await(await doc.getPage(p)).getTextContent();const r=parseJra(tc.items);if(r&&r.rows.length)PDFR.push(r)}
+  PDFR=[];for(let p=1;p<=doc.numPages;p++){const pg=await doc.getPage(p);const tc=await readPageTextContentSafari(pg);const r=parseJra(tc.items);if(r&&r.rows.length)PDFR.push(r)}
   if(!PDFR.length){$('pdfmsg').innerHTML='<span class="bad">出馬表を認識できませんでした(JRA公式の出馬表PDFか確認してください)。</span>';return}
   const sel=$('pdfrace');
   if(PDFR.length>1){sel.style.display='';sel.innerHTML=PDFR.map((r,i)=>`<option value="${i}">${r.place}${r.rno}R ${r.title}</option>`).join('');sel.onchange=()=>applyRace(PDFR[+sel.value])}else sel.style.display='none';
