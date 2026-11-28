@@ -265,6 +265,11 @@ function parseJra(raw){
  const oddsIt=it.filter(o=>o.x>=160&&o.x<210&&o.y<770&&/番人気/.test(o.s));
  let names=it.filter(i=>i.x>=70&&i.x<=90&&i.y<770&&!/^(\d|B$|\((?![地外父市]\)))/.test(i.s)&&!/^[\d.]+$/.test(i.s)&&!/^[父母]\s/.test(i.s)&&!/\((?:栗東|美浦|地方|[^()]*外[^()]*)\)\s*$/.test(i.s)&&!/^コースレコード/.test(i.s)).sort((a,b)=>b.y-a.y).map(i=>{let s=i.s.replace(MARK,'');if(!s){const nx=it.filter(j=>Math.abs(j.y-i.y)<=5&&j.x>i.x+3&&j.x<160).sort((p,q)=>p.x-q.x)[0];s=nx?nx.s.replace(MARK,''):''}return{s:s.replace(/[\s　]/g,''),x:i.x,y:i.y}}).filter(n=>n.s).filter((n,k,arr)=>arr.findIndex(m=>m.s===n.s&&Math.abs(m.y-n.y)<=5)===k);
  if(!names.length&&oddsIt.length){names=oddsIt.map(o=>{const nm=it.filter(i=>Math.abs(i.y-o.y)<=5&&i.x>=66&&i.x<o.x-5&&!/^\d{1,2}$/.test(i.s)&&!/^\(\d/.test(i.s)&&!/^B$/.test(i.s)).sort((p,q)=>p.x-q.x).map(i=>i.s).join('').replace(/[\s　]/g,'').replace(MARK,'');return{s:nm,x:o.x,y:o.y}}).filter(n=>n.s).sort((p,q)=>q.y-p.y)}
+
+ {const recIt=it.filter(i=>i.x>=78&&i.x<=95&&i.y<770&&/^\(\d+\.\d+\.\d+\.\d+\)/.test(i.s)).sort((a,b)=>b.y-a.y);
+  if(recIt.length>=2){const nn=recIt.map(r=>{const cand=it.filter(i=>i.y>r.y+1&&i.y<=r.y+16&&i.x>=66&&i.x<=95&&!/^\d{1,2}$/.test(i.s)&&!/^B$/.test(i.s)&&!/^\(\d+\./.test(i.s));
+    if(!cand.length)return null;const ny=Math.min(...cand.map(i=>i.y-r.y)),row=cand.filter(i=>i.y-r.y<=ny+2).sort((a,b)=>a.x-b.x),s=row.map(i=>i.s).join('').replace(/[\s　]/g,'').replace(MARK,'');
+    return s?{s,x:row[0].x,y:r.y+ny}:null}).filter(Boolean);if(nn.length>=2)names=nn}}
  const rows=[];
  names.forEach((nmIt,k)=>{
   const top=nmIt.y+8,bot=k+1<names.length?names[k+1].y+8:nmIt.y-100;
@@ -290,6 +295,12 @@ function parseJra(raw){
    const mx=Math.max(v[1],v[2],v[3],v[4]);r.est=mx>0?[1,2,3,4].find(c=>v[c]===mx):0}
   if(r.pw===''){const dz=bl.filter(i=>i.x>=246&&/^\d{4}\.\d{2}\.\d{2}$/.test(i.s)).sort((a,b)=>a.x-b.x);
    for(let k=0;k<dz.length&&r.pw==='';k++){const x0=dz[k].x-3,x1=dz[k+1]?dz[k+1].x-3:dz[k].x+80,wi=bl.find(i=>i.x>=x0&&i.x<x1&&/^\d{3}kg/.test(i.s));if(wi)r.pw=wi.s.match(/^(\d{3})kg/)[1]}}
+  {const rc=bl.find(i=>i.x>=78&&i.x<=95&&/^\(\d+\.\d+\.\d+\.\d+\)/.test(i.s));
+   if(rc){const sy=bl.filter(i=>i.x>=78&&i.x<200&&/^父/.test(i.s)).map(i=>i.y),sireY=sy.length?Math.max(...sy):rc.y-40;
+    const mid=bl.filter(i=>i.x>=78&&i.x<200&&i.y<rc.y-1&&i.y>sireY+1&&!/^[父母]/.test(i.s)).sort((a,b)=>b.y-a.y||a.x-b.x),lines=[];
+    for(const i of mid){const L=lines[lines.length-1];if(L&&Math.abs(L.y-i.y)<2)L.t.push(i.s);else lines.push({y:i.y,t:[i.s]})}
+    let txt=rc.s.replace(/^\(\d+\.\d+\.\d+\.\d+\)\s*/,'').replace(/^[\d,.]+万円\s*/,'');txt+=lines.map(L=>L.t.join(' ')).join('');
+    const mm=txt.match(/^(.*)\((栗東|美浦|地方|[^()]*外[^()]*)\)\s*$/);if(mm){const tk=mm[1].trim().split(/\s+/);r.tr=/栗東|美浦/.test(mm[2])?tk.slice(-2).join(''):tk[tk.length-1]}}}
   if(!r.tr||!r.si||!r.bm){const col=bl.filter(i=>i.x>=78&&i.x<215).sort((a,b)=>b.y-a.y||a.x-b.x).map(i=>i.s).join(' ');
    if(!r.tr){const m=col.match(/([^\s()]+)\s+([^\s()]+)\s*\((?:栗東|美浦)\)/);if(m)r.tr=m[1]+m[2]}
    if(!r.si){const m=col.match(/父\s*(.+?)\s*(?:母\s|$)/);if(m)r.si=m[1].trim()}
